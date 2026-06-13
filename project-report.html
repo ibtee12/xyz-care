@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Matrix Math Care — Project Report</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #1e293b;
+    background: #fff;
+  }
+
+  /* ── Print settings ───────────────────────────── */
+  @media print {
+    .no-print { display: none !important; }
+    .page-break { page-break-before: always; }
+    body { font-size: 12px; }
+    .cover { height: 100vh; page-break-after: always; }
+  }
+
+  /* ── Cover page ───────────────────────────────── */
+  .cover {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 60%, #6d28d9 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 40px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::before {
+    content: '';
+    position: absolute;
+    width: 500px; height: 500px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+    top: -150px; right: -150px;
+  }
+  .cover::after {
+    content: '';
+    position: absolute;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+    bottom: -100px; left: -80px;
+  }
+  .cover-badge {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 100px;
+    padding: 6px 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+  .cover h1 {
+    font-size: 52px;
+    font-weight: 900;
+    letter-spacing: -1.5px;
+    line-height: 1.1;
+    margin-bottom: 12px;
+  }
+  .cover h1 span { color: #a5f3fc; }
+  .cover-subtitle {
+    font-size: 18px;
+    font-weight: 400;
+    opacity: 0.85;
+    margin-bottom: 48px;
+    max-width: 480px;
+  }
+  .cover-divider {
+    width: 60px; height: 3px;
+    background: rgba(255,255,255,0.4);
+    border-radius: 2px;
+    margin: 0 auto 40px;
+  }
+  .cover-meta {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .cover-meta-item { text-align: left; }
+  .cover-meta-item .label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    opacity: 0.6;
+    margin-bottom: 4px;
+  }
+  .cover-meta-item .value {
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .cover-stats {
+    display: flex;
+    gap: 24px;
+    margin-top: 56px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .cover-stat {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 16px;
+    padding: 16px 28px;
+    text-align: center;
+  }
+  .cover-stat .num { font-size: 28px; font-weight: 900; }
+  .cover-stat .lbl { font-size: 10px; font-weight: 600; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+
+  /* ── Content wrapper ──────────────────────────── */
+  .content { max-width: 860px; margin: 0 auto; padding: 60px 48px; }
+
+  /* ── TOC ──────────────────────────────────────── */
+  .toc { background: #f8fafc; border-radius: 16px; padding: 32px 36px; margin-bottom: 56px; border: 1px solid #e2e8f0; }
+  .toc h2 { font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 20px; }
+  .toc ol { padding-left: 20px; }
+  .toc li { padding: 5px 0; font-size: 13px; color: #475569; }
+  .toc li a { color: #4f46e5; text-decoration: none; font-weight: 500; }
+  .toc li a:hover { text-decoration: underline; }
+  .toc li .pg { float: right; color: #94a3b8; font-size: 11px; }
+
+  /* ── Section headings ─────────────────────────── */
+  .section { margin-bottom: 52px; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #e2e8f0;
+  }
+  .section-num {
+    width: 32px; height: 32px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: white;
+    font-size: 13px;
+    font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .section-header h2 { font-size: 20px; font-weight: 800; color: #0f172a; }
+  h3 { font-size: 15px; font-weight: 700; color: #1e293b; margin: 28px 0 10px; }
+  h4 { font-size: 13px; font-weight: 700; color: #334155; margin: 18px 0 6px; }
+  p { color: #475569; margin-bottom: 10px; }
+
+  /* ── Feature cards ────────────────────────────── */
+  .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .feature-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 18px 20px;
+    background: #fff;
+  }
+  .feature-card .fc-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+  .feature-card h4 { margin: 0 0 6px; font-size: 13px; font-weight: 700; color: #0f172a; }
+  .feature-card p { font-size: 12px; color: #64748b; margin: 0; line-height: 1.5; }
+
+  /* colour helpers */
+  .bg-indigo { background: #eef2ff; }
+  .bg-emerald { background: #ecfdf5; }
+  .bg-amber { background: #fffbeb; }
+  .bg-rose { background: #fff1f2; }
+  .bg-cyan { background: #ecfeff; }
+  .bg-violet { background: #f5f3ff; }
+  .bg-teal { background: #f0fdfa; }
+  .bg-orange { background: #fff7ed; }
+
+  /* ── Role panels ──────────────────────────────── */
+  .role-panel {
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin: 16px 0;
+  }
+  .role-panel.admin { background: linear-gradient(135deg, #eef2ff, #f5f3ff); border: 1px solid #c7d2fe; }
+  .role-panel.teacher { background: linear-gradient(135deg, #f0fdfa, #ecfeff); border: 1px solid #99f6e4; }
+  .role-panel.student { background: linear-gradient(135deg, #fdf4ff, #f5f3ff); border: 1px solid #e9d5ff; }
+  .role-panel h3 { margin-top: 0; font-size: 15px; }
+  .role-panel ul { padding-left: 18px; }
+  .role-panel ul li { color: #475569; font-size: 12.5px; padding: 3px 0; }
+
+  /* ── Tech stack table ─────────────────────────── */
+  .tech-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .tech-table th {
+    background: #f1f5f9;
+    color: #334155;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .tech-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 12.5px;
+    color: #475569;
+    vertical-align: top;
+  }
+  .tech-table tr:last-child td { border-bottom: none; }
+  .tech-table td:first-child { font-weight: 600; color: #1e293b; width: 160px; }
+  .tag {
+    display: inline-block;
+    background: #eef2ff;
+    color: #4f46e5;
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    margin: 2px 2px 2px 0;
+  }
+  .tag.green { background: #ecfdf5; color: #059669; }
+  .tag.amber { background: #fffbeb; color: #d97706; }
+  .tag.gray  { background: #f1f5f9; color: #475569; }
+
+  /* ── Schema table ─────────────────────────────── */
+  .schema-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 16px 0; }
+  .schema-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 14px 16px;
+    background: #fafafa;
+  }
+  .schema-card .model-name {
+    font-size: 12px;
+    font-weight: 800;
+    color: #4f46e5;
+    margin-bottom: 8px;
+  }
+  .schema-card .field {
+    font-size: 11px;
+    color: #64748b;
+    padding: 2px 0;
+    display: flex;
+    gap: 6px;
+  }
+  .schema-card .field .fname { color: #0f172a; font-weight: 600; }
+  .schema-card .field .ftype { color: #94a3b8; }
+
+  /* ── Flow diagram ─────────────────────────────── */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 20px 0;
+    flex-wrap: wrap;
+  }
+  .flow-step {
+    flex: 1;
+    min-width: 110px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 10px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: #334155;
+    position: relative;
+  }
+  .flow-step .step-num {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: #4f46e5;
+    color: white;
+    font-size: 10px;
+    font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 6px;
+  }
+  .flow-arrow {
+    color: #94a3b8;
+    font-size: 18px;
+    padding: 0 4px;
+    flex-shrink: 0;
+  }
+
+  /* ── Callout boxes ────────────────────────────── */
+  .callout {
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .callout.info { background: #eff6ff; border: 1px solid #bfdbfe; }
+  .callout.success { background: #f0fdf4; border: 1px solid #bbf7d0; }
+  .callout.warning { background: #fffbeb; border: 1px solid #fde68a; }
+  .callout .icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .callout p { margin: 0; font-size: 12.5px; color: #334155; }
+  .callout strong { color: #1e293b; }
+
+  /* ── Screenshots placeholder ──────────────────── */
+  .screenshot-placeholder {
+    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+    border: 2px dashed #cbd5e1;
+    border-radius: 14px;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    font-size: 12px;
+    font-weight: 500;
+    margin: 12px 0;
+    text-align: center;
+  }
+  .screenshot-placeholder .icon { font-size: 32px; margin-bottom: 8px; }
+
+  /* ── Timeline ─────────────────────────────────── */
+  .timeline { position: relative; padding-left: 28px; margin: 16px 0; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px; top: 0; bottom: 0;
+    width: 2px; background: #e2e8f0;
+  }
+  .timeline-item { position: relative; margin-bottom: 20px; }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -24px; top: 5px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #4f46e5;
+    border: 2px solid white;
+    box-shadow: 0 0 0 2px #4f46e5;
+  }
+  .timeline-item h4 { margin: 0 0 4px; font-size: 13px; color: #1e293b; }
+  .timeline-item p { margin: 0; font-size: 12px; color: #64748b; }
+
+  /* ── Print button ─────────────────────────────── */
+  .print-btn {
+    position: fixed;
+    bottom: 28px; right: 28px;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 14px 28px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(79,70,229,0.4);
+    display: flex; align-items: center; gap: 8px;
+    z-index: 1000;
+    transition: all 0.2s;
+  }
+  .print-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(79,70,229,0.5); }
+
+  /* ── Misc ─────────────────────────────────────── */
+  ul.plain { list-style: none; padding: 0; }
+  ul.plain li { padding: 5px 0; border-bottom: 1px solid #f1f5f9; font-size: 12.5px; color: #475569; }
+  ul.plain li:last-child { border-bottom: none; }
+  ul.plain li::before { content: '→ '; color: #4f46e5; font-weight: 700; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .page-break { page-break-before: always; margin-top: 60px; }
+  .footer {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 11px;
+    padding: 40px 0 20px;
+    border-top: 1px solid #f1f5f9;
+    margin-top: 60px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════ COVER ════ -->
+<div class="cover">
+  <div class="cover-badge">Project Report · 2025</div>
+  <h1>Matrix <span>Math Care</span></h1>
+  <p class="cover-subtitle">A full-featured online coaching platform for students, teachers, and administrators</p>
+  <div class="cover-divider"></div>
+  <div class="cover-meta">
+    <div class="cover-meta-item"><div class="label">Project Type</div><div class="value">Web Application</div></div>
+    <div class="cover-meta-item"><div class="label">Platform</div><div class="value">Next.js 15 / Full-Stack</div></div>
+    <div class="cover-meta-item"><div class="label">Database</div><div class="value">PostgreSQL (Supabase)</div></div>
+    <div class="cover-meta-item"><div class="label">Year</div><div class="value">2025</div></div>
+  </div>
+  <div class="cover-stats">
+    <div class="cover-stat"><div class="num">3</div><div class="lbl">User Roles</div></div>
+    <div class="cover-stat"><div class="num">50+</div><div class="lbl">Features</div></div>
+    <div class="cover-stat"><div class="num">20+</div><div class="lbl">API Routes</div></div>
+    <div class="cover-stat"><div class="num">15</div><div class="lbl">DB Models</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ CONTENT ════ -->
+<div class="content">
+
+  <!-- TABLE OF CONTENTS -->
+  <div class="toc">
+    <h2>📋 Table of Contents</h2>
+    <ol>
+      <li><a href="#s1">Project Overview</a></li>
+      <li><a href="#s2">System Architecture</a></li>
+      <li><a href="#s3">Technology Stack</a></li>
+      <li><a href="#s4">Database Design</a></li>
+      <li><a href="#s5">User Roles & Access Control</a></li>
+      <li><a href="#s6">Feature Modules — Admin</a></li>
+      <li><a href="#s7">Feature Modules — Teacher</a></li>
+      <li><a href="#s8">Feature Modules — Student</a></li>
+      <li><a href="#s9">Public-Facing Pages</a></li>
+      <li><a href="#s10">Authentication & Security</a></li>
+      <li><a href="#s11">File Storage & Media</a></li>
+      <li><a href="#s12">Notification System</a></li>
+      <li><a href="#s13">Live Class System</a></li>
+      <li><a href="#s14">Conclusion</a></li>
+    </ol>
+  </div>
+
+  <!-- ─── 1. OVERVIEW ─────────────────────────────────── -->
+  <div class="section" id="s1">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <h2>Project Overview</h2>
+    </div>
+
+    <p><strong>Matrix Math Care</strong> is a comprehensive, multi-role online coaching platform built to digitise the operations of a mathematics coaching centre. It enables administrators to manage the entire institution, teachers to deliver content and interact with students, and students to learn, track progress, and communicate — all within a single integrated web application.</p>
+
+    <p>The platform is fully responsive, works on desktop and mobile browsers, and is deployed on modern cloud infrastructure (Supabase for database and storage, Vercel-compatible Next.js build).</p>
+
+    <div class="callout info">
+      <div class="icon">🎯</div>
+      <p><strong>Project Goal:</strong> Replace manual/paper-based coaching centre operations with a robust digital platform covering enrollment, lesson delivery, live classes, quizzes, marks, payments, certificates, and real-time communication.</p>
+    </div>
+
+    <h3>Key Highlights</h3>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="fc-icon bg-indigo">🏫</div>
+        <h4>Multi-Role Platform</h4>
+        <p>Separate portals for Admin, Teacher, and Student — each with tailored dashboards and feature sets.</p>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon bg-emerald">📹</div>
+        <h4>Live Class System</h4>
+        <p>Timed join-window for Zoom/Meet classes. Students can only access the link during the allowed window.</p>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon bg-amber">💬</div>
+        <h4>Real-Time Chat</h4>
+        <p>Direct messaging between students and teachers with image attachment support.</p>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon bg-rose">📊</div>
+        <h4>Analytics & Reports</h4>
+        <p>Admin dashboard with revenue tracking, enrollment charts, top courses, and quiz statistics.</p>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon bg-cyan">🎓</div>
+        <h4>Digital Certificates</h4>
+        <p>Admin can issue completion certificates to students, visible in their personal portal.</p>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon bg-violet">🧠</div>
+        <h4>Quiz Engine</h4>
+        <p>Admin-built MCQ quizzes with auto-scoring, time limits, and per-attempt result tracking.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 2. ARCHITECTURE ──────────────────────────────── -->
+  <div class="section page-break" id="s2">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <h2>System Architecture</h2>
+    </div>
+
+    <p>Matrix Math Care follows a <strong>monolithic full-stack architecture</strong> using the Next.js App Router. Both the frontend UI and backend API routes live in the same codebase, simplifying deployment and reducing latency.</p>
+
+    <h3>Request Flow</h3>
+    <div class="flow">
+      <div class="flow-step"><div class="step-num">1</div>Browser</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="step-num">2</div>Next.js Middleware (Auth Check)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="step-num">3</div>Server Component / API Route</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="step-num">4</div>Prisma ORM</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="step-num">5</div>PostgreSQL (Supabase)</div>
+    </div>
+
+    <h3>Folder Structure</h3>
+    <table class="tech-table">
+      <tr><th>Folder</th><th>Purpose</th></tr>
+      <tr><td><code>app/</code></td><td>All Next.js App Router pages and API routes</td></tr>
+      <tr><td><code>app/(auth)/</code></td><td>Login and Registration pages</td></tr>
+      <tr><td><code>app/(public)/</code></td><td>Public-facing pages (home, courses, blog, about, contact)</td></tr>
+      <tr><td><code>app/admin/</code></td><td>Admin portal — 12 modules</td></tr>
+      <tr><td><code>app/teacher/</code></td><td>Teacher portal — 7 modules</td></tr>
+      <tr><td><code>app/student/</code></td><td>Student portal — 12 modules</td></tr>
+      <tr><td><code>app/api/</code></td><td>REST API endpoints (20+ routes)</td></tr>
+      <tr><td><code>components/</code></td><td>Shared UI components (shadcn/ui + custom)</td></tr>
+      <tr><td><code>lib/</code></td><td>Database client, auth config, utility functions</td></tr>
+      <tr><td><code>prisma/</code></td><td>Database schema and migrations</td></tr>
+    </table>
+
+    <div class="callout success">
+      <div class="icon">✅</div>
+      <p><strong>Server Components by default:</strong> Data fetching happens on the server (no client round-trips for initial loads). Client components are used only where interactivity is needed (forms, real-time countdowns, chat).</p>
+    </div>
+  </div>
+
+  <!-- ─── 3. TECH STACK ────────────────────────────────── -->
+  <div class="section page-break" id="s3">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <h2>Technology Stack</h2>
+    </div>
+
+    <table class="tech-table">
+      <tr>
+        <th>Layer</th>
+        <th>Technology</th>
+        <th>Purpose</th>
+      </tr>
+      <tr>
+        <td>Frontend Framework</td>
+        <td><span class="tag">Next.js 15</span> <span class="tag gray">React 19</span></td>
+        <td>App Router, Server Components, Client Components, API Routes</td>
+      </tr>
+      <tr>
+        <td>Styling</td>
+        <td><span class="tag">Tailwind CSS v4</span> <span class="tag gray">shadcn/ui</span></td>
+        <td>Utility-first CSS, pre-built accessible components</td>
+      </tr>
+      <tr>
+        <td>Authentication</td>
+        <td><span class="tag">NextAuth.js v5</span></td>
+        <td>JWT sessions, credentials provider, role-based routing</td>
+      </tr>
+      <tr>
+        <td>Database ORM</td>
+        <td><span class="tag">Prisma 7</span></td>
+        <td>Type-safe database queries, schema management, migrations</td>
+      </tr>
+      <tr>
+        <td>Database</td>
+        <td><span class="tag green">PostgreSQL</span> <span class="tag green">Supabase</span></td>
+        <td>Hosted Postgres via Supabase Session Pooler</td>
+      </tr>
+      <tr>
+        <td>File Storage</td>
+        <td><span class="tag green">Supabase Storage</span></td>
+        <td>Video uploads (lessons) and image uploads (chat attachments)</td>
+      </tr>
+      <tr>
+        <td>Password Hashing</td>
+        <td><span class="tag gray">bcryptjs</span></td>
+        <td>Secure password hashing with salt rounds</td>
+      </tr>
+      <tr>
+        <td>Email</td>
+        <td><span class="tag amber">Resend</span></td>
+        <td>Transactional emails (new lesson notifications)</td>
+      </tr>
+      <tr>
+        <td>SMS</td>
+        <td><span class="tag amber">Twilio</span></td>
+        <td>SMS notifications to students</td>
+      </tr>
+      <tr>
+        <td>Payments</td>
+        <td><span class="tag amber">Stripe</span></td>
+        <td>Payment processing integration</td>
+      </tr>
+      <tr>
+        <td>Icons</td>
+        <td><span class="tag gray">Lucide React</span></td>
+        <td>500+ consistent SVG icons</td>
+      </tr>
+      <tr>
+        <td>Language</td>
+        <td><span class="tag">TypeScript</span></td>
+        <td>Full type-safety across frontend and backend</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ─── 4. DATABASE ──────────────────────────────────── -->
+  <div class="section page-break" id="s4">
+    <div class="section-header">
+      <div class="section-num">4</div>
+      <h2>Database Design</h2>
+    </div>
+
+    <p>The database uses <strong>PostgreSQL</strong> managed via Prisma ORM. There are <strong>15 models</strong> covering all platform entities. All primary keys are UUIDs. Relationships use cascading deletes to maintain data integrity.</p>
+
+    <div class="schema-grid">
+      <div class="schema-card">
+        <div class="model-name">User</div>
+        <div class="field"><span class="fname">id</span><span class="ftype">UUID (PK)</span></div>
+        <div class="field"><span class="fname">name</span><span class="ftype">String</span></div>
+        <div class="field"><span class="fname">email</span><span class="ftype">String (unique)</span></div>
+        <div class="field"><span class="fname">role</span><span class="ftype">admin|teacher|student</span></div>
+        <div class="field"><span class="fname">roll_number</span><span class="ftype">String? (unique)</span></div>
+        <div class="field"><span class="fname">phone, classLevel</span><span class="ftype">String?</span></div>
+      </div>
+      <div class="schema-card">
+        <div class="model-name">Course</div>
+        <div class="field"><span class="fname">id</span><span class="ftype">UUID (PK)</span></div>
+        <div class="field"><span class="fname">title, slug</span><span class="ftype">String</span></div>
+        <div class="field"><span class="fname">course_type</span><span class="ftype">online|offline</span></div>
+        <div class="field"><span class="fname">price</span><span class="ftype">Decimal</span></div>
+        <div class="field"><span class="fname">instructor_id</span><span class="ftype">→ User</span></div>
+        <div class="field"><span class="fname">location, batch</span><span class="ftype">String? (offline)</span></div>
+      </div>
+      <div class="schema-card">
+        <div class="model-name">Lesson</div>
+        <div class="field"><span class="fname">id</span><span class="ftype">UUID (PK)</span></div>
+        <div class="field"><span class="fname">title, description</span><span class="ftype">String</span></div>
+        <div class="field"><span class="fname">video_url</span><span class="ftype">String?</span></div>
+        <div class="field"><span class="fname">duration</span><span class="ftype">Int? (seconds)</span></div>
+        <div class="field"><span class="fname">order</span><span class="ftype">Int</span></div>
+        <div class="field"><span class="fname">course_id</span><span class="ftype">→ Course</span></div>
+      </div>
+      <div class="schema-card">
+        <div class="model-name">LiveClass</div>
+        <div class="field"><span class="fname">id</span><span class="ftype">UUID (PK)</span></div>
+        <div class="field"><span class="fname">title</span><span class="ftype">String</span></div>
+        <div class="field"><span class="fname">meet_link</span><span class="ftype">String</span></div>
+        <div class="field"><span class="fname">scheduled_at</span><span class="ftype">DateTime</span></div>
+        <div class="field"><span class="fname">join_window_minutes</span><span class="ftype">Int (default 30)</span></div>
+        <div class="field"><span class="fname">course_id, teacher_id</span><span class="ftype">→ FK</span></div>
+      </div>
+      <div class="schema-card">
+        <div class="model-name">Enrollment</div>
+        <div class="field"><span class="fname">id</span><span class="ftype">UUID (PK)</span></div>
+        <div class="field"><span class="fname">student_id</span><span class="ftype">→ User</span></div>
+        <div class="field"><span class="fname">course_id</span><span class="ftype">→ Course</span></div>
+        <div class="field"><span class="fname">progress</span><span class="ftype">Int (0-100%)</span></div>
+        <div class="field"><span class="fname">created_at</span><span class="ftype">DateTime</span></div>
+        <div class="field"><span class="fname">@@unique</span><span class="ftype">[student, course]</span></div>
+      </div>
+      <div class="schema-card">
+        <div class="model-name">ChatMessage</div>
+        <div class="field"><span class="fname">id</span><span class="ftype">UUID (PK)</span></div>
+        <div class="field"><span class="fname">sender_id</span><span class="ftype">→ User</span></div>
+        <div class="field"><span class="fname">recipient_id</span><span class="ftype">→ User</span></div>
+        <div class="field"><span class="fname">message</span><span class="ftype">String</span></div>
+        <div class="field"><span class="fname">image_url</span><span class="ftype">String?</span></div>
+        <div class="field"><span class="fname">is_read</span><span class="ftype">Boolean</span></div>
+      </div>
+      <div class="schema-card">
+        <div class="model-name">Notification</div>
+        <div class="field"><span class="fname">id</span><span class="ftype">UUID (PK)</span></div>
+        <div class="field"><span class="fname">recipient_id</span><span class="ftype">→ User</span></div>
+        <div class="field"><span class="fname">type</span><span class="ftype">alert|email|sms|website</span></div>
+        <div class="field"><span class="fname">message</span><span class="ftype">String</span></div>
+        <div class="field"><span class="fname">link</span><span class="ftype">String?</span></div>
+        <div class="field"><span class="fname">is_read</span><span class="ftype">Boolean</span></div>
+      </div>
+      <div class="schema-card">
+        <div class="model-name">Quiz / Question</div>
+        <div class="field"><span class="fname">quiz: id, title</span><span class="ftype">String</span></div>
+        <div class="field"><span class="fname">time_limit</span><span class="ftype">Int? (minutes)</span></div>
+        <div class="field"><span class="fname">question</span><span class="ftype">String</span></div>
+        <div class="field"><span class="fname">options</span><span class="ftype">String[]</span></div>
+        <div class="field"><span class="fname">correct_index</span><span class="ftype">Int</span></div>
+        <div class="field"><span class="fname">marks</span><span class="ftype">Int</span></div>
+      </div>
+      <div class="schema-card">
+        <div class="model-name">Payment</div>
+        <div class="field"><span class="fname">id</span><span class="ftype">UUID (PK)</span></div>
+        <div class="field"><span class="fname">student_id</span><span class="ftype">→ User</span></div>
+        <div class="field"><span class="fname">amount</span><span class="ftype">Decimal</span></div>
+        <div class="field"><span class="fname">status</span><span class="ftype">paid|pending|failed</span></div>
+        <div class="field"><span class="fname">method, txn_id</span><span class="ftype">String</span></div>
+        <div class="field"><span class="fname">note</span><span class="ftype">String?</span></div>
+      </div>
+    </div>
+
+    <p style="margin-top:12px; font-size:12px; color:#94a3b8;">Additional models: <strong>LessonProgress</strong>, <strong>LessonBookmark</strong>, <strong>Certificate</strong>, <strong>StudentMark</strong>, <strong>Exam</strong>, <strong>ForumThread</strong>, <strong>ForumReply</strong>, <strong>BlogPost</strong>, <strong>Coupon</strong>, <strong>QuizAttempt</strong></p>
+  </div>
+
+  <!-- ─── 5. ROLES ─────────────────────────────────────── -->
+  <div class="section page-break" id="s5">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <h2>User Roles & Access Control</h2>
+    </div>
+
+    <p>The platform has three distinct roles. Access control is enforced at two layers: <strong>Next.js Middleware</strong> (route-level redirect before rendering) and <strong>API route guards</strong> (session check on every endpoint).</p>
+
+    <div class="role-panel admin">
+      <h3>🛡️ Admin</h3>
+      <p style="font-size:12px; color:#4f46e5; margin-bottom:10px;">Full platform control. Manages all users, courses, and system settings.</p>
+      <ul>
+        <li>Create / edit / delete courses (online & offline)</li>
+        <li>Manage student and teacher accounts</li>
+        <li>Issue certificates, manage payments and coupon codes</li>
+        <li>Build quizzes and manage marks/exams</li>
+        <li>Send notifications (in-app, email, SMS)</li>
+        <li>View analytics and revenue reports</li>
+        <li>Write and publish blog posts</li>
+      </ul>
+    </div>
+
+    <div class="role-panel teacher">
+      <h3>👨‍🏫 Teacher</h3>
+      <p style="font-size:12px; color:#0d9488; margin-bottom:10px;">Manages their own courses and communicates with enrolled students.</p>
+      <ul>
+        <li>Upload recorded video lessons (URL or direct upload to Supabase)</li>
+        <li>Schedule live classes with timed join windows and meet links</li>
+        <li>View enrolled students and their progress</li>
+        <li>Chat with students (text + image attachments)</li>
+        <li>View and manage marks for their courses</li>
+        <li>Receive in-app notifications</li>
+      </ul>
+    </div>
+
+    <div class="role-panel student">
+      <h3>🎓 Student</h3>
+      <p style="font-size:12px; color:#7c3aed; margin-bottom:10px;">Accesses their enrolled courses and tracks learning progress.</p>
+      <ul>
+        <li>Browse and view enrolled courses (online lessons + live classes)</li>
+        <li>Watch video lessons; mark lessons complete to track progress</li>
+        <li>Join live classes during the active join window only</li>
+        <li>Take quizzes and view scored results</li>
+        <li>View marks, certificates, and payment history</li>
+        <li>Chat with teachers (text + image), participate in forums</li>
+        <li>Bookmark lessons, receive notifications</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ─── 6. ADMIN FEATURES ────────────────────────────── -->
+  <div class="section page-break" id="s6">
+    <div class="section-header">
+      <div class="section-num">6</div>
+      <h2>Feature Modules — Admin Portal</h2>
+    </div>
+
+    <h3>Dashboard</h3>
+    <p>Landing page showing key platform metrics: total students, teachers, courses, enrollments, revenue, and recent activity. Provides quick navigation to all management sections.</p>
+
+    <h3>Student Management</h3>
+    <p>Full CRUD for student accounts. Features include:</p>
+    <ul class="plain">
+      <li>Search by name, email, or roll number</li>
+      <li>Filter by class level and institution</li>
+      <li>View individual student profile (enrollments, marks, payments)</li>
+      <li>Auto-generated MatrixID (M-XXXX format) on registration</li>
+    </ul>
+
+    <h3>Course Management</h3>
+    <p>Create and manage both online and offline courses:</p>
+    <ul class="plain">
+      <li>Online courses: lessons, video content, live classes, quizzes</li>
+      <li>Offline courses: venue, batch, schedule information</li>
+      <li>Set price, thumbnail, description, and publish/draft status</li>
+      <li>View enrolled students per course</li>
+    </ul>
+
+    <h3>Marks & Exams</h3>
+    <p>Upload exam marks via CSV, view score sheets per exam, and manage student performance records.</p>
+
+    <h3>Quiz Builder</h3>
+    <p>Create MCQ quizzes linked to courses with per-question marks, time limits, and optional descriptions. Quizzes are published and available to enrolled students immediately.</p>
+
+    <h3>Payments</h3>
+    <p>Track all student payments with status (paid/pending/failed), transaction IDs, payment method, and notes. View revenue summary.</p>
+
+    <h3>Notifications</h3>
+    <p>Send targeted notifications to all students or a specific roll number via three channels: in-app website alert, email (Resend), and SMS (Twilio).</p>
+
+    <h3>Certificates</h3>
+    <p>Issue digital completion certificates to students for specific courses, with auto-generated certificate numbers.</p>
+
+    <h3>Coupons</h3>
+    <p>Create percentage or fixed-amount discount coupons with optional expiry dates and usage limits.</p>
+
+    <h3>Blog</h3>
+    <p>Write and publish blog posts visible on the public-facing website. Rich text content with publish/draft management.</p>
+
+    <h3>Reports & Analytics</h3>
+    <p>Visual analytics dashboard with:</p>
+    <ul class="plain">
+      <li>Monthly enrollment bar chart (last 6 months)</li>
+      <li>Top courses by enrollment count</li>
+      <li>Recent payments list</li>
+      <li>Quiz attempt count and certificates issued summary</li>
+    </ul>
+  </div>
+
+  <!-- ─── 7. TEACHER FEATURES ──────────────────────────── -->
+  <div class="section page-break" id="s7">
+    <div class="section-header">
+      <div class="section-num">7</div>
+      <h2>Feature Modules — Teacher Portal</h2>
+    </div>
+
+    <h3>Dashboard</h3>
+    <p>Overview of the teacher's courses, total enrolled students, and quick access to upload content or schedule live classes.</p>
+
+    <h3>Course & Lesson Management</h3>
+    <p>Teachers can upload recorded video lessons for their courses:</p>
+    <ul class="plain">
+      <li>Paste a YouTube or Google Drive URL (embedded player auto-detects format)</li>
+      <li>Direct file upload (stored in Supabase Storage, publicly accessible URL)</li>
+      <li>Set lesson title, description, order number, and duration</li>
+      <li>Enrolled students receive an automatic notification on upload</li>
+    </ul>
+
+    <h3>Live Classes</h3>
+    <p>The live class system is the most interactive feature for teachers:</p>
+    <ul class="plain">
+      <li>Schedule a class with a Zoom or Google Meet link</li>
+      <li>Set the exact start time (datetime picker)</li>
+      <li>Set a "last check-in" window in minutes (e.g. 30 min) — students can only join within this window</li>
+      <li>After window closes, the link is completely hidden from students</li>
+      <li>All enrolled students receive an automatic notification with the class time</li>
+      <li>Teacher dashboard shows: Live Now / Upcoming / Ended sections with pulsing live badge</li>
+    </ul>
+
+    <div class="callout warning">
+      <div class="icon">⏱️</div>
+      <p><strong>Join Window Logic:</strong> If a class starts at 1:00 PM with a 30-min window, students can access the link from 1:00 PM to 1:30 PM. After 1:30 PM the button shows "Ended" and the link is hidden permanently.</p>
+    </div>
+
+    <h3>Student List</h3>
+    <p>View all students enrolled in the teacher's courses with their profile details.</p>
+
+    <h3>Marks</h3>
+    <p>View marks/scores for students across the teacher's courses.</p>
+
+    <h3>Chat</h3>
+    <p>Messaging interface showing all students enrolled in the teacher's courses:</p>
+    <ul class="plain">
+      <li>Conversations sorted by most recent message first</li>
+      <li>Timestamps shown in sidebar (time/Yesterday/day name)</li>
+      <li>Image attachment support — teacher can send pictures</li>
+      <li>Full message history per student thread</li>
+    </ul>
+
+    <h3>Notifications</h3>
+    <p>View in-app notifications sent by admin or system events.</p>
+  </div>
+
+  <!-- ─── 8. STUDENT FEATURES ──────────────────────────── -->
+  <div class="section page-break" id="s8">
+    <div class="section-header">
+      <div class="section-num">8</div>
+      <h2>Feature Modules — Student Portal</h2>
+    </div>
+
+    <h3>Dashboard</h3>
+    <p>Personalised overview showing enrolled courses, recent activity, progress stats, upcoming live classes, and quick links to lessons.</p>
+
+    <h3>My Courses</h3>
+    <p>Grid view of enrolled courses. Each course card links to the course detail page showing:</p>
+    <ul class="plain">
+      <li>Course header with progress bar (online) or venue/batch info (offline)</li>
+      <li>Full lesson list — click any lesson to open the video player</li>
+      <li>Live classes section with real-time status</li>
+    </ul>
+
+    <h3>Video Lesson Player</h3>
+    <p>Dedicated lesson page with:</p>
+    <ul class="plain">
+      <li>YouTube embed, Google Drive preview, or native HTML5 video player (auto-detected)</li>
+      <li>"Mark as Completed" checkbox — updates progress percentage</li>
+      <li>Sidebar playlist showing all lessons with completion indicators</li>
+      <li>Bookmark button to save lessons for later</li>
+    </ul>
+
+    <h3>Live Classes (within Course)</h3>
+    <p>Live classes are shown within each course detail page. Each row has a real-time countdown timer and dynamic button:</p>
+
+    <table class="tech-table">
+      <tr><th>Status</th><th>What Student Sees</th></tr>
+      <tr><td>Before start time</td><td>"Not Started" (locked button) + countdown like "Starts in 2h 15m"</td></tr>
+      <tr><td>Within join window</td><td>Green "Join Now" button (opens meet link) + "Closes in 12m 30s"</td></tr>
+      <tr><td>After join window</td><td>"Ended" (locked) — meet link completely hidden</td></tr>
+    </table>
+
+    <h3>Quizzes</h3>
+    <p>Students see available quizzes for their courses. Each quiz shows questions one-by-one with MCQ options, a countdown timer, and auto-submits when time runs out. Results are shown immediately after submission.</p>
+
+    <h3>Marks</h3>
+    <p>View exam scores uploaded by admin for each subject/exam, with a breakdown by question or total marks.</p>
+
+    <h3>Chat</h3>
+    <p>Message any teacher from enrolled courses directly:</p>
+    <ul class="plain">
+      <li>Text messages with Enter-to-send</li>
+      <li>Image attachment support (picture icon → pick file → preview → send)</li>
+      <li>Full message history, auto-scroll to latest</li>
+    </ul>
+
+    <h3>Notifications</h3>
+    <p>In-app notification centre. When the student opens this page, all notifications are automatically marked as read and the red bell badge count resets to zero immediately.</p>
+
+    <h3>Forum</h3>
+    <p>Discussion board where students can create threads and reply to others. Helps with peer learning and Q&A.</p>
+
+    <h3>Bookmarks</h3>
+    <p>Saved lessons accessible from a single page — students can bookmark any lesson while watching it.</p>
+
+    <h3>Certificates</h3>
+    <p>View completion certificates issued by the admin, showing the course name, certificate number, and issue date.</p>
+
+    <h3>Payments</h3>
+    <p>Full payment history with status, transaction ID, amount, and date for all course fee transactions.</p>
+
+    <h3>Profile</h3>
+    <p>View and update personal information including name, phone, class level, and institution. MatrixID is displayed prominently.</p>
+  </div>
+
+  <!-- ─── 9. PUBLIC PAGES ──────────────────────────────── -->
+  <div class="section page-break" id="s9">
+    <div class="section-header">
+      <div class="section-num">9</div>
+      <h2>Public-Facing Pages</h2>
+    </div>
+
+    <p>The platform includes a public website accessible without login, serving as a marketing and information hub.</p>
+
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="fc-icon bg-indigo">🏠</div>
+        <h4>Home Page</h4>
+        <p>Hero section, feature highlights, course previews, and call-to-action buttons for registration.</p>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon bg-emerald">📚</div>
+        <h4>Courses Page</h4>
+        <p>Browse all published courses with filters, pricing, course type (online/offline), and enroll prompts.</p>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon bg-amber">📝</div>
+        <h4>Blog</h4>
+        <p>Published articles written by admin. Full post view with slug-based URLs.</p>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon bg-cyan">ℹ️</div>
+        <h4>About Page</h4>
+        <p>Institutional information, mission statement, and team details.</p>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon bg-rose">📞</div>
+        <h4>Contact Page</h4>
+        <p>Contact information and inquiry form.</p>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon bg-violet">🔐</div>
+        <h4>Login / Register</h4>
+        <p>Secure login with show/hide password. Register with auto-generated MatrixID shown on success.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 10. AUTH & SECURITY ──────────────────────────── -->
+  <div class="section page-break" id="s10">
+    <div class="section-header">
+      <div class="section-num">10</div>
+      <h2>Authentication & Security</h2>
+    </div>
+
+    <h3>Authentication Flow</h3>
+    <div class="flow">
+      <div class="flow-step"><div class="step-num">1</div>User enters email + password</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="step-num">2</div>bcrypt.compare() checks hash</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="step-num">3</div>NextAuth issues JWT with role</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="step-num">4</div>Redirected to role dashboard</div>
+    </div>
+
+    <h3>Security Measures</h3>
+    <ul class="plain">
+      <li>Passwords hashed with bcrypt (10 salt rounds) — never stored in plain text</li>
+      <li>JWT tokens signed with a secret key (NEXTAUTH_SECRET)</li>
+      <li>Middleware checks session role before rendering any protected page</li>
+      <li>Every API route independently verifies session role (defense in depth)</li>
+      <li>UUID validation on dynamic routes prevents Prisma injection via invalid IDs</li>
+      <li>File uploads restricted by MIME type (images: image/*, videos: video/*)</li>
+      <li>Supabase service role key server-side only — never exposed to client</li>
+      <li>Teacher access scoped: teachers can only see/modify their own courses and students</li>
+    </ul>
+
+    <h3>Registration</h3>
+    <p>Students register with name, email, password, phone, class level, and institution. The system auto-generates a unique <strong>MatrixID</strong> (format: M-XXXX) by finding the highest existing number and incrementing it. The MatrixID is displayed in a modal on successful registration.</p>
+  </div>
+
+  <!-- ─── 11. FILE STORAGE ─────────────────────────────── -->
+  <div class="section" id="s11">
+    <div class="section-header">
+      <div class="section-num">11</div>
+      <h2>File Storage & Media</h2>
+    </div>
+
+    <p>File uploads are handled via <strong>Supabase Storage</strong> using a server-side API route authenticated with the service role key. A single public bucket named <code>uploads</code> stores all files.</p>
+
+    <table class="tech-table">
+      <tr><th>Upload Type</th><th>Path</th><th>Used By</th></tr>
+      <tr>
+        <td>Video lessons</td>
+        <td><code>uploads/videos/{teacherId}/{timestamp}-{filename}</code></td>
+        <td>Teacher upload form → lesson video_url</td>
+      </tr>
+      <tr>
+        <td>Chat images</td>
+        <td><code>uploads/chat/{userId}/{timestamp}.{ext}</code></td>
+        <td>Teacher & student chat attachments</td>
+      </tr>
+    </table>
+
+    <h3>Video Player — Auto-Detection</h3>
+    <p>The student video player automatically detects the URL type and renders the appropriate player:</p>
+    <ul class="plain">
+      <li>YouTube URL → responsive iframe embed</li>
+      <li>Google Drive URL → Drive preview iframe</li>
+      <li>Direct file URL (Supabase) → native HTML5 &lt;video&gt; with controls</li>
+    </ul>
+  </div>
+
+  <!-- ─── 12. NOTIFICATIONS ────────────────────────────── -->
+  <div class="section page-break" id="s12">
+    <div class="section-header">
+      <div class="section-num">12</div>
+      <h2>Notification System</h2>
+    </div>
+
+    <p>The platform has a multi-channel notification system. All in-app notifications are stored in the <code>Notification</code> table and shown in the student/teacher portals.</p>
+
+    <div class="two-col">
+      <div>
+        <h3>Automatic Triggers</h3>
+        <ul class="plain">
+          <li>New video lesson uploaded → all enrolled students notified</li>
+          <li>Live class scheduled → all enrolled students notified</li>
+        </ul>
+        <h3>Admin-Sent</h3>
+        <ul class="plain">
+          <li>In-app website notification</li>
+          <li>Email via Resend</li>
+          <li>SMS via Twilio</li>
+          <li>Target: all students or specific roll number</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Notification Bell</h3>
+        <ul class="plain">
+          <li>Red badge shows unread count in sidebar</li>
+          <li>Polls every 30 seconds for new notifications</li>
+          <li>Instantly resets to 0 when student visits Notifications page</li>
+          <li>Uses a custom DOM event (notifications-read) for immediate badge refresh</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 13. LIVE CLASS ───────────────────────────────── -->
+  <div class="section" id="s13">
+    <div class="section-header">
+      <div class="section-num">13</div>
+      <h2>Live Class System</h2>
+    </div>
+
+    <p>The live class system is designed to function like a timed attendance system — students can only access the class link during an approved window, preventing late joins after the class has progressed.</p>
+
+    <h3>Teacher Workflow</h3>
+    <div class="timeline">
+      <div class="timeline-item">
+        <h4>1. Create a Live Class</h4>
+        <p>Select course, add title, paste Zoom/Meet link, set start datetime and join window (minutes).</p>
+      </div>
+      <div class="timeline-item">
+        <h4>2. Preview Timeline</h4>
+        <p>Form shows exact open and close times before saving (e.g. "Join opens: 1:00 PM · Closes: 1:30 PM").</p>
+      </div>
+      <div class="timeline-item">
+        <h4>3. Students Notified</h4>
+        <p>All enrolled students receive an automatic in-app notification with the class time.</p>
+      </div>
+      <div class="timeline-item">
+        <h4>4. Monitor Status</h4>
+        <p>Teacher dashboard shows Live Now (pulsing green) / Upcoming / Ended sections in real time.</p>
+      </div>
+    </div>
+
+    <h3>Student Experience</h3>
+    <div class="timeline">
+      <div class="timeline-item">
+        <h4>Before Start</h4>
+        <p>Student sees "Not Started" with a live countdown: "Starts in 1h 45m".</p>
+      </div>
+      <div class="timeline-item">
+        <h4>During Window</h4>
+        <p>Green "Join Now" button appears. Clicking opens the meet link in a new tab. Countdown shows time remaining: "Join closes in 18m 40s".</p>
+      </div>
+      <div class="timeline-item">
+        <h4>After Window</h4>
+        <p>Button becomes "Ended" (grey, disabled). The meet link is permanently hidden — no way to retrieve it.</p>
+      </div>
+    </div>
+
+    <div class="callout success">
+      <div class="icon">✅</div>
+      <p><strong>Real-time:</strong> The student page uses a client-side interval (1 second tick) to update the status and countdown without any page refresh. The transition from "Not Started" → "Join Now" → "Ended" happens automatically in the browser.</p>
+    </div>
+  </div>
+
+  <!-- ─── 14. CONCLUSION ───────────────────────────────── -->
+  <div class="section page-break" id="s14">
+    <div class="section-header">
+      <div class="section-num">14</div>
+      <h2>Conclusion</h2>
+    </div>
+
+    <p><strong>Matrix Math Care</strong> is a production-ready, full-stack web application that digitises the complete workflow of an educational coaching institution. It was built with modern best practices: server-side rendering for performance, TypeScript for type safety, role-based middleware for security, and a clean component-based UI.</p>
+
+    <h3>Summary of What Was Built</h3>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="fc-icon bg-indigo">📐</div>
+        <h4>Full-Stack Architecture</h4>
+        <p>Next.js 15 App Router with server components, API routes, Prisma ORM, and PostgreSQL — all in a single cohesive codebase.</p>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon bg-emerald">🔐</div>
+        <h4>Secure Multi-Role Auth</h4>
+        <p>Three roles with JWT authentication, middleware guards, and per-API-route session validation.</p>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon bg-violet">⚡</div>
+        <h4>Real-Time Features</h4>
+        <p>Live countdown timers, instant notification badge refresh, and dynamic join-window enforcement.</p>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon bg-teal">☁️</div>
+        <h4>Cloud Infrastructure</h4>
+        <p>Supabase for PostgreSQL and file storage, with secure service-role-key uploads and public CDN URLs.</p>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon bg-amber">💬</div>
+        <h4>Communication Suite</h4>
+        <p>Teacher-student chat with images, discussion forums, multi-channel notifications (in-app, email, SMS).</p>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon bg-rose">📈</div>
+        <h4>Analytics & Management</h4>
+        <p>Admin reports with charts, student management, payments, certificates, coupons, and quiz engine.</p>
+      </div>
+    </div>
+
+    <div class="callout info" style="margin-top: 32px;">
+      <div class="icon">🚀</div>
+      <p><strong>Platform Status:</strong> Matrix Math Care is fully functional with 50+ features across 3 user portals, 30+ pages, 20+ API endpoints, and 15 database models. Built entirely with open-source technologies and hosted on Supabase free tier infrastructure.</p>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p><strong>Matrix Math Care</strong> · Project Report · 2025</p>
+    <p style="margin-top:6px;">Built with Next.js · Prisma · PostgreSQL · Supabase · TypeScript</p>
+  </div>
+
+</div>
+
+<!-- Print button -->
+<button class="print-btn no-print" onclick="window.print()">
+  🖨️ Save as PDF
+</button>
+
+</body>
+</html>

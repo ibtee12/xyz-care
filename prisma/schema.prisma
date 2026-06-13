@@ -1,0 +1,338 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  student
+  admin
+  teacher
+}
+
+enum CourseType {
+  online
+  offline
+}
+
+model User {
+  id            String   @id @default(uuid()) @db.Uuid
+  name          String
+  email         String   @unique
+  password      String
+  roll_number   String?  @unique
+  role          UserRole @default(student)
+  phone         String?
+  classLevel    String?
+  institution   String?
+  student_batch String?
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  taught_courses       Course[]         @relation("CourseInstructor")
+  enrollments          Enrollment[]     @relation("EnrollmentStudent")
+  created_exams        Exam[]           @relation("ExamCreator")
+  student_marks        StudentMark[]    @relation("MarkStudent")
+  payments             Payment[]        @relation("PaymentStudent")
+  notifications        Notification[]   @relation("NotificationRecipient")
+  blog_posts           BlogPost[]       @relation("BlogAuthor")
+  issued_certificates  Certificate[]    @relation("CertificateStudent")
+  forum_threads        ForumThread[]    @relation("ForumAuthor")
+  forum_replies        ForumReply[]     @relation("ForumReplyAuthor")
+  sent_messages        ChatMessage[]    @relation("ChatSender")
+  received_messages    ChatMessage[]    @relation("ChatRecipient")
+  lesson_progress      LessonProgress[] @relation("ProgressStudent")
+  lesson_bookmarks     LessonBookmark[] @relation("BookmarkStudent")
+  live_classes_taught  LiveClass[]      @relation("LiveClassTeacher")
+  quiz_attempts        QuizAttempt[]    @relation("QuizAttemptStudent")
+}
+
+model Course {
+  id            String   @id @default(uuid()) @db.Uuid
+  title         String
+  slug          String   @unique
+  description   String?
+  instructor_id String   @db.Uuid
+  price         Decimal  @db.Decimal(10, 2)
+  thumbnail     String?
+  course_type   CourseType @default(online)
+  location      String?
+  schedule      String?
+  time          String?
+  batch         String?
+  is_published  Boolean  @default(false)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  instructor   User          @relation("CourseInstructor", fields: [instructor_id], references: [id], onDelete: Cascade)
+  lessons      Lesson[]
+  enrollments  Enrollment[]
+  quizzes      Quiz[]
+  certificates Certificate[]
+  live_classes LiveClass[]
+}
+
+model Lesson {
+  id          String   @id @default(uuid()) @db.Uuid
+  course_id   String   @db.Uuid
+  title       String
+  description String?
+  video_url   String?
+  duration    Int?
+  order       Int
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  course     Course           @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  progress   LessonProgress[]
+  bookmarks  LessonBookmark[]
+}
+
+model LessonProgress {
+  id           String   @id @default(uuid()) @db.Uuid
+  student_id   String   @db.Uuid
+  lesson_id    String   @db.Uuid
+  is_completed Boolean  @default(false)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  student User   @relation("ProgressStudent", fields: [student_id], references: [id], onDelete: Cascade)
+  lesson  Lesson @relation(fields: [lesson_id], references: [id], onDelete: Cascade)
+
+  @@unique([student_id, lesson_id])
+}
+
+model Enrollment {
+  id         String   @id @default(uuid()) @db.Uuid
+  student_id String   @db.Uuid
+  course_id  String   @db.Uuid
+  progress   Int      @default(0)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  student User   @relation("EnrollmentStudent", fields: [student_id], references: [id], onDelete: Cascade)
+  course  Course @relation(fields: [course_id], references: [id], onDelete: Cascade)
+
+  @@unique([student_id, course_id])
+}
+
+model Exam {
+  id          String   @id @default(uuid()) @db.Uuid
+  title       String
+  subject     String
+  total_marks Int
+  exam_date   DateTime
+  created_by  String   @db.Uuid
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  creator       User          @relation("ExamCreator", fields: [created_by], references: [id], onDelete: Cascade)
+  student_marks StudentMark[]
+}
+
+model StudentMark {
+  id             String   @id @default(uuid()) @db.Uuid
+  exam_id        String   @db.Uuid
+  student_id     String   @db.Uuid
+  roll_number    String
+  marks_obtained Int
+  remarks        String?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  exam    Exam  @relation(fields: [exam_id], references: [id], onDelete: Cascade)
+  student User  @relation("MarkStudent", fields: [student_id], references: [id], onDelete: Cascade)
+
+  @@unique([exam_id, student_id])
+}
+
+model Payment {
+  id         String   @id @default(uuid()) @db.Uuid
+  student_id String   @db.Uuid
+  amount     Decimal  @db.Decimal(10, 2)
+  method     String
+  status     String
+  txn_id     String   @unique
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  student User @relation("PaymentStudent", fields: [student_id], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id           String   @id @default(uuid()) @db.Uuid
+  recipient_id String   @db.Uuid
+  type         String
+  message      String
+  link         String?
+  is_read      Boolean  @default(false)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  recipient User @relation("NotificationRecipient", fields: [recipient_id], references: [id], onDelete: Cascade)
+}
+
+model BlogPost {
+  id           String   @id @default(uuid()) @db.Uuid
+  title        String
+  slug         String   @unique
+  content      String
+  author_id    String   @db.Uuid
+  is_published Boolean  @default(false)
+  published_at DateTime?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  author User @relation("BlogAuthor", fields: [author_id], references: [id], onDelete: Cascade)
+}
+
+model Coupon {
+  id             String   @id @default(uuid()) @db.Uuid
+  code           String   @unique
+  discount_type  String
+  discount_value Decimal  @db.Decimal(10, 2)
+  max_uses       Int?
+  used_count     Int      @default(0)
+  expires_at     DateTime?
+  is_active      Boolean  @default(true)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+}
+
+model Certificate {
+  id             String   @id @default(uuid()) @db.Uuid
+  student_id     String   @db.Uuid
+  course_id      String   @db.Uuid
+  certificate_no String   @unique
+  issued_at      DateTime @default(now())
+  url            String?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  student User   @relation("CertificateStudent", fields: [student_id], references: [id], onDelete: Cascade)
+  course  Course @relation(fields: [course_id], references: [id], onDelete: Cascade)
+
+  @@unique([student_id, course_id])
+}
+
+model Quiz {
+  id              String   @id @default(uuid()) @db.Uuid
+  course_id       String   @db.Uuid
+  title           String
+  description     String?
+  total_questions Int      @default(0)
+  total_marks     Int      @default(0)
+  time_limit      Int?
+  is_published    Boolean  @default(true)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  course    Course         @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  questions QuizQuestion[]
+  attempts  QuizAttempt[]
+}
+
+model ForumThread {
+  id         String   @id @default(uuid()) @db.Uuid
+  author_id  String   @db.Uuid
+  title      String
+  content    String
+  is_locked  Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  author  User         @relation("ForumAuthor", fields: [author_id], references: [id], onDelete: Cascade)
+  replies ForumReply[]
+}
+
+model ChatMessage {
+  id           String   @id @default(uuid()) @db.Uuid
+  sender_id    String   @db.Uuid
+  recipient_id String   @db.Uuid
+  message      String
+  image_url    String?
+  is_read      Boolean  @default(false)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  sender    User @relation("ChatSender", fields: [sender_id], references: [id], onDelete: Cascade)
+  recipient User @relation("ChatRecipient", fields: [recipient_id], references: [id], onDelete: Cascade)
+}
+
+model LiveClass {
+  id                  String   @id @default(uuid()) @db.Uuid
+  course_id           String   @db.Uuid
+  teacher_id          String   @db.Uuid
+  title               String
+  description         String?
+  meet_link           String
+  scheduled_at        DateTime
+  join_window_minutes Int      @default(30)
+  duration            Int?
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+
+  course  Course @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  teacher User   @relation("LiveClassTeacher", fields: [teacher_id], references: [id], onDelete: Cascade)
+}
+
+model QuizQuestion {
+  id            String   @id @default(uuid()) @db.Uuid
+  quiz_id       String   @db.Uuid
+  question      String
+  options       String[]
+  correct_index Int
+  marks         Int      @default(1)
+  order         Int      @default(0)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  quiz Quiz @relation(fields: [quiz_id], references: [id], onDelete: Cascade)
+}
+
+model QuizAttempt {
+  id           String   @id @default(uuid()) @db.Uuid
+  quiz_id      String   @db.Uuid
+  student_id   String   @db.Uuid
+  answers      Int[]
+  score        Int
+  submitted_at DateTime @default(now())
+
+  quiz    Quiz @relation(fields: [quiz_id], references: [id], onDelete: Cascade)
+  student User @relation("QuizAttemptStudent", fields: [student_id], references: [id], onDelete: Cascade)
+
+  @@unique([quiz_id, student_id])
+}
+
+model ForumReply {
+  id         String   @id @default(uuid()) @db.Uuid
+  thread_id  String   @db.Uuid
+  author_id  String   @db.Uuid
+  content    String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  thread ForumThread @relation(fields: [thread_id], references: [id], onDelete: Cascade)
+  author User        @relation("ForumReplyAuthor", fields: [author_id], references: [id], onDelete: Cascade)
+}
+
+model LessonBookmark {
+  id         String   @id @default(uuid()) @db.Uuid
+  student_id String   @db.Uuid
+  lesson_id  String   @db.Uuid
+  created_at DateTime @default(now())
+
+  student User   @relation("BookmarkStudent", fields: [student_id], references: [id], onDelete: Cascade)
+  lesson  Lesson @relation(fields: [lesson_id], references: [id], onDelete: Cascade)
+
+  @@unique([student_id, lesson_id])
+}
