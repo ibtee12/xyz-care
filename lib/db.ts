@@ -5,10 +5,10 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
-const connectionString = process.env.DIRECT_URL || process.env.DATABASE_URL
+const connectionString = process.env.DATABASE_URL || process.env.DIRECT_URL
 
 if (!connectionString) {
-  throw new Error("DIRECT_URL or DATABASE_URL must be set for Prisma.")
+  throw new Error("DATABASE_URL or DIRECT_URL must be set for Prisma.")
 }
 
 const adapter = new PrismaPg({ connectionString })
