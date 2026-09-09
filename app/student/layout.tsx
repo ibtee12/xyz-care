@@ -21,6 +21,8 @@ import { Avatar } from "@/components/shared/avatar"
 import { NotificationBadge } from "@/components/shared/notification-bell"
 import { authOptions } from "@/lib/auth"
 
+export const dynamic = "force-dynamic"
+
 const studentLinks = [
   { href: "/student/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/student/courses", label: "My Courses", icon: BookOpen },

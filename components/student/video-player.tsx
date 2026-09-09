@@ -4,7 +4,6 @@ import { useState } from "react"
 import { CheckCircle2, Circle, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 
-import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 
 type VideoPlayerProps = {

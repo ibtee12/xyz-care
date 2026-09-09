@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { ArrowLeft, CheckCircle2, XCircle, Clock, Trophy, Brain } from "lucide-react"
 
 type Question = { id: string; question: string; options: string[]; marks: number; order: number }
@@ -23,30 +23,22 @@ export function QuizTaker({
   const [correct, setCorrect] = useState(correctAnswers)
   const [secondsLeft, setSecondsLeft] = useState(quiz.time_limit ? quiz.time_limit * 60 : null)
   const submitted = useRef(false)
+  const answersRef = useRef(answers)
+  const submitRef = useRef<() => Promise<void>>(async () => {})
 
-  useEffect(() => {
-    if (!secondsLeft || attempt) return
-    const id = setInterval(() => {
-      setSecondsLeft((s) => {
-        if (!s || s <= 1) { clearInterval(id); if (!submitted.current) submit(); return 0 }
-        return s - 1
-      })
-    }, 1000)
-    return () => clearInterval(id)
-  }, [])
-
-  const submit = async () => {
+  const submit = useCallback(async () => {
     if (submitted.current) return
     submitted.current = true
     setSubmitting(true)
+    const currentAnswers = answersRef.current.map((a) => a ?? -1)
     const res = await fetch(`/api/student/quizzes/${quiz.id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ answers: answers.map((a) => a ?? -1) }),
+      body: JSON.stringify({ answers: currentAnswers }),
     })
     const data = await res.json()
     if (res.ok) {
-      setAttempt({ score: data.score, answers: answers.map((a) => a ?? -1), submitted_at: new Date().toISOString() })
+      setAttempt({ score: data.score, answers: currentAnswers, submitted_at: new Date().toISOString() })
       setCorrect(null)
       // Fetch correct answers for review
       const qRes = await fetch(`/api/student/quizzes/${quiz.id}`)
@@ -54,7 +46,32 @@ export function QuizTaker({
       if (qData.attempt) setCorrect(null) // will be served on reload
     }
     setSubmitting(false)
-  }
+  }, [quiz.id])
+
+  useEffect(() => {
+    answersRef.current = answers
+  }, [answers])
+
+  useEffect(() => {
+    submitRef.current = submit
+  }, [submit])
+
+  useEffect(() => {
+    if (!secondsLeft || attempt) return
+    const id = setInterval(() => {
+      setSecondsLeft((s) => {
+        if (!s || s <= 1) {
+          clearInterval(id)
+          if (!submitted.current) {
+            void submitRef.current()
+          }
+          return 0
+        }
+        return s - 1
+      })
+    }, 1000)
+    return () => clearInterval(id)
+  }, [secondsLeft, attempt])
 
   if (attempt) {
     const pct = Math.round((attempt.score / quiz.total_marks) * 100)

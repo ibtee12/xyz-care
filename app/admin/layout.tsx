@@ -4,6 +4,8 @@ import { getServerSession } from "next-auth"
 import { AdminAppShell } from "@/components/admin/admin-app-shell"
 import { authOptions } from "@/lib/auth"
 
+export const dynamic = "force-dynamic"
+
 export default async function AdminLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {

@@ -3,7 +3,6 @@ import { getServerSession } from "next-auth"
 import { 
   BookOpen, 
   CheckCircle2, 
-  ChevronRight, 
   MapPin, 
   Calendar, 
   Layers, 

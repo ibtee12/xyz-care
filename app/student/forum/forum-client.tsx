@@ -14,7 +14,7 @@ type Thread = {
   replyCount: number
 }
 
-export function ForumClient({ userId, threads: initial }: { userId: string; threads: Thread[] }) {
+export function ForumClient({ threads: initial }: { userId?: string; threads: Thread[] }) {
   const [threads, setThreads] = useState(initial)
   const [showNew, setShowNew] = useState(false)
   const [newTitle, setNewTitle] = useState("")

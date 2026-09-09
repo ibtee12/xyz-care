@@ -26,7 +26,6 @@ export async function POST(request: Request) {
     }
 
     const supabase = createClient(supabaseUrl, serviceKey)
-    const ext = file.name.split(".").pop() ?? "mp4"
     const sanitizedName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_")
     const path = `videos/${session.user.id}/${Date.now()}-${sanitizedName}`
     const bytes = await file.arrayBuffer()

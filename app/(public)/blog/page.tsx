@@ -5,6 +5,8 @@ import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { db } from "@/lib/db"
 
+export const dynamic = "force-dynamic"
+
 export default async function PublicBlogPage() {
   const posts = await db.blogPost.findMany({
     where: { is_published: true },

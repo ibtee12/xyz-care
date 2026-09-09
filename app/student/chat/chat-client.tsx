@@ -23,17 +23,16 @@ function Avatar({ name, size = "md" }: { name: string; size?: "sm" | "md" }) {
 
 export function StudentChatClient({
   studentId,
-  studentName,
   teachers,
 }: {
   studentId: string
-  studentName: string
+  studentName?: string
   teachers: Teacher[]
 }) {
   const [activeTeacher, setActiveTeacher] = useState<Teacher | null>(teachers[0] ?? null)
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(teachers.length > 0)
   const [sending, setSending] = useState(false)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
@@ -42,11 +41,18 @@ export function StudentChatClient({
 
   useEffect(() => {
     if (!activeTeacher) return
-    setLoading(true)
+    let ignore = false
     fetch(`/api/student/chat?withUserId=${activeTeacher.id}`)
       .then((r) => r.json())
-      .then((d) => setMessages(d.messages ?? []))
-      .finally(() => setLoading(false))
+      .then((d) => {
+        if (!ignore) setMessages(d.messages ?? [])
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false)
+      })
+    return () => {
+      ignore = true
+    }
   }, [activeTeacher])
 
   useEffect(() => {
@@ -129,7 +135,10 @@ export function StudentChatClient({
             {teachers.map((t) => (
               <button
                 key={t.id}
-                onClick={() => setActiveTeacher(t)}
+                onClick={() => {
+                  setActiveTeacher(t)
+                  setLoading(true)
+                }}
                 className={`flex items-center gap-3 rounded-2xl p-4 text-left transition-all ${
                   activeTeacher?.id === t.id
                     ? "bg-indigo-600 text-white shadow-md"

@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useState } from "react"
-import { ArrowLeft, MessageSquare, Lock, Send, User, Shield } from "lucide-react"
+import { ArrowLeft, MessageSquare, Lock, Send } from "lucide-react"
 
 type Author = { id: string; name: string; role: string }
 type Reply = { id: string; content: string; created_at: string; author: Author }
@@ -79,7 +79,7 @@ export function ThreadDetailClient({ userId, thread: initial }: { userId: string
           <MessageSquare className="size-4" /> {replies.length} {replies.length === 1 ? "Reply" : "Replies"}
         </h2>
 
-        {replies.map((r, i) => (
+        {replies.map((r) => (
           <div key={r.id} className={`flex items-start gap-3 rounded-2xl p-5 ${r.author.id === userId ? "bg-indigo-50 ring-1 ring-indigo-100" : "bg-white shadow-sm ring-1 ring-gray-100"}`}>
             <Avatar name={r.author.name} />
             <div className="min-w-0 flex-1">

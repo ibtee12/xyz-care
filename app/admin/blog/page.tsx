@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
-import { PenSquare, Plus, Globe, EyeOff } from "lucide-react"
+import { Plus } from "lucide-react"
 
 import { authOptions } from "@/lib/auth"
 import { db } from "@/lib/db"

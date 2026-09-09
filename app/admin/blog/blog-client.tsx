@@ -2,7 +2,6 @@
 
 import Link from "next/link"
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { Globe, EyeOff, Pencil, Trash2, PenSquare } from "lucide-react"
 
 type Post = {
@@ -17,7 +16,6 @@ type Post = {
 
 export function AdminBlogClient({ posts: initial }: { posts: Post[] }) {
   const [posts, setPosts] = useState(initial)
-  const router = useRouter()
 
   const togglePublish = async (post: Post) => {
     const res = await fetch(`/api/admin/blog/${post.id}`, {

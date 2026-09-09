@@ -5,7 +5,6 @@ import {
   ArrowLeft, 
   PlayCircle, 
   CheckCircle2, 
-  Lock, 
   Menu,
   Clock,
   BookOpen

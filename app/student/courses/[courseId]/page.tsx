@@ -6,7 +6,6 @@ import {
   BookOpen,
   Calendar,
   Clock,
-  Lock,
   MapPin,
   PlayCircle,
   User,

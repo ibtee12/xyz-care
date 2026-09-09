@@ -311,7 +311,7 @@ export function TeacherLiveClassesClient({
         <div className="flex flex-col items-center justify-center rounded-2xl bg-white p-16 shadow-sm text-center">
           <Video className="mb-3 size-10 text-gray-200" />
           <p className="font-semibold text-gray-400">No classes scheduled yet.</p>
-          <p className="mt-1 text-sm text-gray-300">Click "Schedule Class" to create your first session.</p>
+          <p className="mt-1 text-sm text-gray-300">Click &quot;Schedule Class&quot; to create your first session.</p>
         </div>
       )}
     </div>

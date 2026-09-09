@@ -4,6 +4,8 @@ import { getServerSession } from "next-auth"
 import { TeacherAppShell } from "@/components/teacher/teacher-app-shell"
 import { authOptions } from "@/lib/auth"
 
+export const dynamic = "force-dynamic"
+
 export default async function TeacherLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {

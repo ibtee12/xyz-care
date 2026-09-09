@@ -25,16 +25,22 @@ export function MarksUploadForm({ courses }: { courses: Course[] }) {
   const [success, setSuccess] = useState("")
 
   useEffect(() => {
-    if (!courseId) { setStudents([]); setMarks({}); return }
-    setLoadingStudents(true)
+    if (!courseId) return
+    let ignore = false
     fetch(`/api/admin/enrolled-students?courseId=${courseId}`)
       .then((r) => r.json())
       .then((data) => {
+        if (ignore) return
         const list: Student[] = data.students ?? []
         setStudents(list)
         setMarks(Object.fromEntries(list.map((s) => [s.id, { value: "", remarks: "" }])))
       })
-      .finally(() => setLoadingStudents(false))
+      .finally(() => {
+        if (!ignore) setLoadingStudents(false)
+      })
+    return () => {
+      ignore = true
+    }
   }, [courseId])
 
   const setMark = (studentId: string, value: string) =>
@@ -90,7 +96,7 @@ export function MarksUploadForm({ courses }: { courses: Course[] }) {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-extrabold text-gray-900">Create Exam & Enter Marks</h1>
-        <p className="mt-1 text-sm text-gray-500">Select a course, fill in exam details, then enter each student's marks.</p>
+        <p className="mt-1 text-sm text-gray-500">Select a course, fill in exam details, then enter each student&apos;s marks.</p>
       </div>
 
       {/* Exam details card */}
@@ -123,6 +129,13 @@ export function MarksUploadForm({ courses }: { courses: Course[] }) {
                   const course = courses.find((c) => c.id === id)
                   setCourseId(id)
                   setCourseTitle(course?.title ?? "")
+                  if (!id) {
+                    setStudents([])
+                    setMarks({})
+                    setLoadingStudents(false)
+                  } else {
+                    setLoadingStudents(true)
+                  }
                 }}
                 className="w-full appearance-none rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
               >
