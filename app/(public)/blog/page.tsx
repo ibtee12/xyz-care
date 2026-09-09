@@ -4,11 +4,16 @@ import { PenSquare, User, Calendar } from "lucide-react"
 import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { db } from "@/lib/db"
+import type { Prisma } from "@prisma/client"
 
 export const dynamic = "force-dynamic"
 
+type BlogPostWithAuthor = Prisma.BlogPostGetPayload<{
+  include: { author: { select: { name: true } } }
+}>
+
 export default async function PublicBlogPage() {
-  const posts = await db.blogPost.findMany({
+  const posts: BlogPostWithAuthor[] = await db.blogPost.findMany({
     where: { is_published: true },
     include: { author: { select: { name: true } } },
     orderBy: { published_at: "desc" },
@@ -38,7 +43,7 @@ export default async function PublicBlogPage() {
           </div>
         ) : (
           <div className="space-y-8">
-            {posts.map((post) => (
+            {posts.map((post: BlogPostWithAuthor) => (
               <Link
                 key={post.id}
                 href={`/blog/${post.slug}`}
